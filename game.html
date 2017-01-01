@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>my first game</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<style type="text/css">
+		canvas{
+		  background: url(backjpg.jpg);
+		  z-index: -1;
+		  border: 2px solid black;
+		}
+	</style>
+</head>
+<body onload="startgame()">
+	<script type="text/javascript">
+		var spaceship;
+		var obstacle = [];
+
+		function startgame() {
+			mygamearea.start();
+			spaceship = new component(30, 30, "yellow",135, 370);
+		}
+
+		var mygamearea = {
+			canvas : document.createElement("canvas"),
+			start : function(){
+				this.canvas.width = 300;
+				this.canvas.height = 400;
+				this.context = this.canvas.getContext("2d");
+				document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+				this.interval = setInterval(updatemygamearea, 20);
+				this.frameNo = 0;
+				window.addEventListener('keydown', function(e){
+					mygamearea.keys =  (mygamearea.keys || []);
+					mygamearea.keys[e.keyCode] = true;
+				})
+				window.addEventListener('keyup', function(e){
+					mygamearea.keys[e.keyCode] = false;
+				})
+			},
+			clear : function() {
+				this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			},
+			stop : function() {
+				clearInterval(this.interval);
+			}
+
+		}
+		function everyinterval(n) {
+			if((mygamearea.frameNo / n ) % 1 == 0){return true;}
+			return false;
+		}
+
+		function component(width, height, color, x,y){
+			this.x = x;
+			this.gamearea = mygamearea;
+			this.y = y;
+			this.speedY = 0
+			this.speedX = 0;
+			this.width = width;
+			this.height = height;
+			this.update = function(){
+				ctx = mygamearea.context;
+				ctx.fillStyle = color;
+				ctx.fillRect(this.x, this.y, this.width, this.height);	
+		    }
+		    this.newpos = function(){
+		    	this.x += this.speedX;
+		    	this.y  += this.speedY;
+		    }
+
+		    this.crashwith =function(otherobj) {
+		    	var myleft = this.x;
+		    	var myright = this.x + (this.width);
+		    	var mytop = this.y;
+		    	var mybottom = this.y + (this.height);
+		    	var otherleft = otherobj.x;
+		    	var otherright = otherobj.x + (otherobj.width);
+		    	var othertop = otherobj.y;
+		    	var otherbottom = otherobj.y + (otherobj.height);
+		    	var crash = true;
+		    	if( (mybottom < othertop) ||
+		    		(myleft > otherright) ||
+		    		(mytop > otherbottom) ||
+		    		(myright < otherleft)) {
+		    		crash = false;
+		    	}
+		    	return crash;
+
+		    }
+		}
+		function updatemygamearea(){
+			var x, y;
+			for(i = 0; i < obstacle.length ; i += 1){
+				if(spaceship.crashwith(obstacle[i])){
+					mygamearea.stop;
+				}
+			}
+			mygamearea.clear();
+			mygamearea.frameNo += 1;
+			if (mygamearea.frameNo == 1 || everyinterval(150)) {
+				x = (mygamearea.canvas.width)/2;
+				y = 0;
+				obstacle.push(new component(50, 50, "red",x ,y ));
+ 
+			}	
+			for(i =0; i < obstacle.length; i += 1) {
+			obstacle[i].y += 1;
+			obstacle[i].update();
+			}
+			spaceship.speedX = 0;
+			spaceship.speedY = 0;
+			if(mygamearea.keys && mygamearea.keys[37]){spaceship.speedX = -2;}
+			if(mygamearea.keys && mygamearea.keys[39]){spaceship.speedX = 2;}
+			if(mygamearea.keys && mygamearea.keys[38]){spaceship.speedY = -2;}
+			if(mygamearea.keys && mygamearea.keys[40]){spaceship.speedY = 2;}
+			spaceship.newpos();
+			spaceship.update();
+			}
+		}
+
+	
+
+
+	</script>
+</body>
+</html>
